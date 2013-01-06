@@ -18,7 +18,6 @@
 * TEAM 2879 robot code
 * Version unknown - continuing pre-kickoff development
 * 
-*
 */
 
 /*
@@ -62,7 +61,7 @@ class River : public SimpleRobot
      
 public:
     River(void):
-       
+    
          frontRight(1),
          frontLeft(2),
          backRight(3),
@@ -129,20 +128,20 @@ public:
         leftJags (-speed);
     }
     void strafeRight(float speed)
-    	{
+        {
          frontRight.Set(speed);
-    	 frontLeft.Set(-speed);
-    	 backRight.Set(-speed);
-    	 backLeft.Set(speed);
-    	}
-    	
-    	void strafeLeft(float speed)
-    	{
-    	 frontRight.Set(-speed);
-    	 frontLeft.Set(speed);
-    	 backRight.Set(speed);
-    	 backLeft.Set(-speed);
-    	}
+         frontLeft.Set(-speed);
+         backRight.Set(-speed);
+         backLeft.Set(speed);
+        }
+        
+        void strafeLeft(float speed)
+        {
+         frontRight.Set(-speed);
+         frontLeft.Set(speed);
+         backRight.Set(speed);
+         backLeft.Set(-speed);
+        }
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     void Autonomous(void)
@@ -160,7 +159,6 @@ public:
              GetWatchdog().Feed();
              
              //~~~~~~~~~~~~~ Updated Variabled and Diagnostics ~~~~~~~~~~~~~~~~~
-             
              throttle = ((.5 * driveStick.GetThrottle()) + .5);
              move = (driveStick.GetRawAxis(2));
              spin = (driveStick.GetRawAxis(1));
@@ -173,19 +171,19 @@ public:
              userDisplay->UpdateLCD();
              //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
              if (driveStick.GetTrigger()) {
-            	 River_Drive.MecanumDrive_Cartesian(driveStick.GetX(), driveStick.GetY(), 0.0, 0.0);
+                 River_Drive.MecanumDrive_Cartesian(driveStick.GetX(), driveStick.GetY(), 0.0, 0.0);
              }
              else if (driveStick.GetRawButton(3)) {
-            	 allJags(throttle);
+                 allJags(throttle);
              }
              else if (driveStick.GetRawButton(2)){
-            	 allJags(-throttle);
+                 allJags(-throttle);
              }
              else if (driveStick.GetRawButton(4)) {
-            	 strafeLeft(throttle);
+                 strafeLeft(throttle);
              }
              else if (driveStick.GetRawButton(5)) {
-            	 strafeRight(throttle);
+                 strafeRight(throttle);
              }
              else {
              River_Drive.ArcadeDrive(spin, move, false);
@@ -196,23 +194,5 @@ public:
     }
     
 };
-    
-START_ROBOT_CLASS(River);    
-    
-    
-    
-    
-    
-    
-    
- 
 
-
-
-
-	   
-	   
-	   
-	   
-	   
-	   
+START_ROBOT_CLASS(River);
