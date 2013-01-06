@@ -31,6 +31,7 @@
 *   (jag) Back Left              (Sidecar) PWM port #4
 *   (spike) Compressor           (Sidecar) Relay port #1
 *   Logitech Attack3 joystick    (Laptop)  USB port #1
+*   USB xBox controller          (Laptop)  USB port #1 (as an alternative to the joystick)
 */
 
 
@@ -39,21 +40,22 @@
 class River : public SimpleRobot
 {
      // Misc Variables
-     bool squaredInputs;
-     float throttle;
-     float move;
-     float spin;
+     bool squaredInputs;  // variable used to set "squared inputs" Not actually used at this point.
+     float throttle;   // used to represent the position of the "throttle" on an attack 3 joystick
+     float move;  // used to represent the raw Y AXIS. AXIS #2 on the attack 3 joystick
+     float spin; // used to represent the raw X AXIS. AXIS #1 on the attack 3 joystick
      
      // Relays
      
      // Motor Controllers
-     Jaguar frontRight;
-     Jaguar frontLeft;
-     Jaguar backRight;
-     Jaguar backLeft;
+     Jaguar frontRight; // jag on port #1
+     Jaguar frontLeft;  // jag on port #2
+     Jaguar backRight;  // jag on port #3
+     Jaguar backLeft;   // jag on port #4
      
      // HIDs
      Joystick driveStick;
+     //Joystick derpDerp  // uncomment for xbox control
      
      // Important Stuff
      RobotDrive River_Drive;
@@ -61,18 +63,19 @@ class River : public SimpleRobot
      
 public:
     River(void):
-    
+         //as they are declared above! 
          frontRight(1),
          frontLeft(2),
          backRight(3),
          backLeft(4),
          driveStick(1),
-         River_Drive(&frontLeft, &backLeft, &frontRight, &backRight)
+         // derpDerp(1),   // uncomment for xbox control
+         River_Drive(&frontLeft, &backLeft, &frontRight, &backRight) // River_Drive uses jags as declared above
     {
-         GetWatchdog().SetExpiration(0.1);
-         River_Drive.SetExpiration(0.1);
+         GetWatchdog().SetExpiration(0.1);   //sets the saftey expiration for watchdog
+         River_Drive.SetExpiration(0.1);     //sets safey expiration for River_Drive
          
-         throttle=((.5 * driveStick.GetThrottle()) + .5);
+         throttle=((.5 * driveStick.GetThrottle()) + .5); // changes throttle from raw input (-1 to 1) to (0 to 1)
          userDisplay = DriverStationLCD::GetInstance();
          userDisplay->Clear();
     }
@@ -105,49 +108,46 @@ public:
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     //~~~~~~~~~~~~ Motor Control ~~~~~~~~~~~~~~~~~~~~~~~
-    void allJags (float speed) {
+    void allJags (float speed) { // sets all the jags 
         frontRight.Set (speed);
         frontLeft.Set (speed);
         backRight.Set (speed);
         backLeft.Set (speed);
     }
-    void rightJags (float speed) {
+    void rightJags (float speed) { // sets just the right jags 
         frontRight.Set (speed);
         backRight.Set (speed);
     }
-    void leftJags (float speed) {
+    void leftJags (float speed) { // sets just the left jags
         frontLeft.Set (speed);
         backLeft.Set (speed);
     }
-    void rotateRight (float speed) {
+    void rotateRight (float speed) { // roates the robot Right
         rightJags (-speed);
         leftJags (speed);
     }
-    void roateLeft (float speed) {
+    void roateLeft (float speed) { // rotates the robot Left
         rightJags (speed);
         leftJags (-speed);
     }
-    void strafeRight(float speed)
-        {
-         frontRight.Set(speed);
-         frontLeft.Set(-speed);
-         backRight.Set(-speed);
-         backLeft.Set(speed);
-        }
-        
-        void strafeLeft(float speed)
-        {
-         frontRight.Set(-speed);
-         frontLeft.Set(speed);
-         backRight.Set(speed);
-         backLeft.Set(-speed);
-        }
+    void strafeLeft(float speed) { // strafes Left at a given speed
+        frontRight.Set(speed);
+        frontLeft.Set(-speed);
+        backRight.Set(-speed);
+        backLeft.Set(speed);
+    }
+    void strafeRight(float speed) { // strafes Right at a given speed
+        frontRight.Set(-speed);
+        frontLeft.Set(speed);
+        backRight.Set(speed);
+        backLeft.Set(-speed);
+    }
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     void Autonomous(void)
     {
        rotateRight(1.0);
-       Wait(10.0);
+       Wait(10.0);   // lololololloololololololol
        allJags(0.0);
     }
     
@@ -173,8 +173,14 @@ public:
              if (driveStick.GetTrigger()) {
                  River_Drive.MecanumDrive_Cartesian(driveStick.GetX(), driveStick.GetY(), 0.0, 0.0);
              }
+             /*
+              * if (derpDerp.GetRawAxis(3) > .5) {
+              *    River_Drive.Mecanum_Cartesian(derpDerp.GetRawAxis(1), derpDerp.GetRawAxis(2), derpDerp.GetRawAxis(4), 0.0)
+              * }
+              */
              else if (driveStick.GetRawButton(3)) {
                  allJags(throttle);
+                 //all of these commands can be assigned to the d pad on the xbox controler, but firt we're gonna have to figure out which buttons those are...
              }
              else if (driveStick.GetRawButton(2)){
                  allJags(-throttle);
@@ -188,6 +194,11 @@ public:
              else {
              River_Drive.ArcadeDrive(spin, move, false);
              }
+             /*
+              * else {
+              * River_Drive.ArcadeDrive(derpDerp.GetRawAxis(1)), derpDerp.GetRawAxis(2), false);
+              * }
+              */
             
          }
         
