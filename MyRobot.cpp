@@ -31,7 +31,7 @@
 *   (jag) Back Left              (Sidecar) PWM port #4
 *   (spike) Compressor           (Sidecar) Relay port #1
 *   Logitech Attack3 joystick    (Laptop)  USB port #1
-*   USB xBox controller          (Laptop)  USB port #1 (as an alternative to the joystick)
+*   USB Xbox controller          (Laptop)  USB port #1 (as an alternative to the joystick)
 */
 
 
