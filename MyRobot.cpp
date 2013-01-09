@@ -20,6 +20,12 @@
 * 
 */
 
+/*  Interesting quotes from development:
+ *  --------------------------------------------------
+ *   Gregory: "Make the computer thingy"
+ * 
+ */
+
 /*
 *   HARDWARE CONFIGURATION
 *   
@@ -146,8 +152,9 @@ public:
     
     void Autonomous(void)
     {
-       rotateRight(1.0);
-       Wait(10.0);   // lololololloololololololol
+       GetWatchdog().SetEnabled(false);    // disable the watchdog so it doesn't screw everything up.
+       rotateRight(0.8);
+       Wait(3.0);   // lololololloololololololol
        allJags(0.0);
     }
     
