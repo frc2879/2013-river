@@ -54,8 +54,8 @@ class River : public SimpleRobot
      Jaguar backLeft;   // jag on port #4
      
      // HIDs
-     Joystick driveStick;
-     //Joystick derpDerp  // uncomment for xbox control
+     //Joystick driveStick; // uncomment for joystick control
+     Joystick derpDerp  // uncomment for xbox control
      
      // Important Stuff
      RobotDrive River_Drive;
@@ -68,9 +68,9 @@ public:
          frontLeft(2),
          backRight(3),
          backLeft(4),
-         driveStick(1),
-         // derpDerp(1),   // uncomment for xbox control
-         River_Drive(&frontLeft, &backLeft, &frontRight, &backRight) // River_Drive uses jags as declared above
+         // driveStick(1),  // uncomment for joystick control
+         derpDerp(1),   // uncomment for xbox control
+         River_Drive(&frontLeft, &backLeft, &frontRight, &backRight) // River_Drive uses jags as declared above... Remove 2 of these to accomadate 2 wheel tank drive
     {
          GetWatchdog().SetExpiration(0.1);   //sets the saftey expiration for watchdog
          River_Drive.SetExpiration(0.1);     //sets safey expiration for River_Drive
