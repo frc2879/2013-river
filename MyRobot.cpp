@@ -16,7 +16,7 @@
 
 /*
 * TEAM 2879 robot code
-* Version unknown - continuing pre-kickoff development
+* Version Unknown - Xbox controller?
 * 
 */
 
@@ -31,15 +31,27 @@
 *   
 *   Device:                      Connection:
 *   --------------------------------------------------
-*   (jag) Front Right            (Sidecar) PWM port #1 
-*   (jag) Front Left             (Sidecar) PWM port #2
-*   (jag) Back Right             (Sidecar) PWM port #3
-*   (jag) Back Left              (Sidecar) PWM port #4
+*   (jag) Back Right             (Sidecar) PWM port #1 
+*   (jag) Back Left              (Sidecar) PWM port #2
 *   (spike) Compressor           (Sidecar) Relay port #1
-*   Logitech Attack3 joystick    (Laptop)  USB port #1
-*   USB Xbox controller          (Laptop)  USB port #1 (as an alternative to the joystick)
+*   USB Xbox controller          (Laptop)  USB port #1 (Usin it for real now. This code will not work with a standard joystick)
 */
 
+#define Button_X 1
+#define Button_Y 4
+#define Button_A 2
+#define Button_B 3
+#define Button_START 10
+#define Button_BACK 9
+#define Button_RIGHT_BUMPER 6
+#define Button_RIGHT_TRIGGER 8
+#define Button_LEFT_BUMPER 5
+#define Button_LEFT_TRIGGER 7
+
+#define Stick_LEFT_Y 2
+#define Stick_LEFT_X 1
+#define Stick_RIGHT_X 4
+#define Stick_RIGHT_Y 5
 
 #include "WPILib.h"
 
@@ -47,21 +59,19 @@ class River : public SimpleRobot
 {
      // Misc Variables
      bool squaredInputs;  // variable used to set "squared inputs" Not actually used at this point.
-     float throttle;   // used to represent the position of the "throttle" on an attack 3 joystick
-     float move;  // used to represent the raw Y AXIS. AXIS #2 on the attack 3 joystick
-     float spin; // used to represent the raw X AXIS. AXIS #1 on the attack 3 joystick
+     float throttle;   // used to represent the alternate "throttle" value.
+     float move;  // used to represent the raw Y AXIS. AXIS #2 of the left stick on the gamepad.
+     float spin; // used to represent the raw X AXIS. AXIS #1 of the left stick on the gamepad.
      
      // Relays
+     Relay Comp; // spike relay on port one for air compressor.
      
-     // Motor Controllers
-     Jaguar frontRight; // jag on port #1
-     Jaguar frontLeft;  // jag on port #2
-     Jaguar backRight;  // jag on port #3
-     Jaguar backLeft;   // jag on port #4
+     // Motor Controller
+     Jaguar backRight;  // jag on port #1
+     Jaguar backLeft;   // jag on port #2
      
      // HIDs
-     //Joystick driveStick; // uncomment for joystick control
-     Joystick derpDerp  // uncomment for xbox control
+     Joystick derpDerp  // Logitech Gamepad
      
      // Important Stuff
      RobotDrive River_Drive;
@@ -70,21 +80,16 @@ class River : public SimpleRobot
 public:
     River(void):
          //as they are declared above! 
-         frontRight(1),
-         frontLeft(2),
-         backRight(3),
-         backLeft(4),
-         // driveStick(1),  // uncomment for joystick control
-         derpDerp(1),   // uncomment for xbox control
-         River_Drive(&frontLeft, &backLeft, &frontRight, &backRight) // River_Drive uses jags as declared above... Remove 2 of these to accomadate 2 wheel tank drive
+         backRight(1),
+         backLeft(2),
+         derpDerp(1),   // logitech gamepad...
+         River_Drive(&backLeft, &backRight) // River_Drive uses jags as declared above... Remove 2 of these to accomadate 2 wheel tank drive
     {
          GetWatchdog().SetExpiration(0.1);   //sets the saftey expiration for watchdog
          River_Drive.SetExpiration(0.1);     //sets safey expiration for River_Drive
-         
-         throttle=((.5 * driveStick.GetThrottle()) + .5); // changes throttle from raw input (-1 to 1) to (0 to 1)
-         userDisplay = DriverStationLCD::GetInstance();
-         userDisplay->Clear();
-    }
+    
+    
+    
     
     //~~~~~~~~~~~~~~ Display Utities ~~~~~~~~~~~~~~~~~~
     void clearlineOne(void) {   // Clears line #1
@@ -115,17 +120,13 @@ public:
     
     //~~~~~~~~~~~~ Motor Control ~~~~~~~~~~~~~~~~~~~~~~~
     void allJags (float speed) { // sets all the jags 
-        frontRight.Set (speed);
-        frontLeft.Set (speed);
         backRight.Set (speed);
         backLeft.Set (speed);
     }
     void rightJags (float speed) { // sets just the right jags 
-        frontRight.Set (speed);
         backRight.Set (speed);
     }
     void leftJags (float speed) { // sets just the left jags
-        frontLeft.Set (speed);
         backLeft.Set (speed);
     }
     void rotateRight (float speed) { // roates the robot Right
@@ -135,18 +136,6 @@ public:
     void roateLeft (float speed) { // rotates the robot Left
         rightJags (speed);
         leftJags (-speed);
-    }
-    void strafeLeft(float speed) { // strafes Left at a given speed
-        frontRight.Set(speed);
-        frontLeft.Set(-speed);
-        backRight.Set(-speed);
-        backLeft.Set(speed);
-    }
-    void strafeRight(float speed) { // strafes Right at a given speed
-        frontRight.Set(-speed);
-        frontLeft.Set(speed);
-        backRight.Set(speed);
-        backLeft.Set(-speed);
     }
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -166,9 +155,22 @@ public:
              GetWatchdog().Feed();
              
              //~~~~~~~~~~~~~ Updated Variabled and Diagnostics ~~~~~~~~~~~~~~~~~
-             throttle = ((.5 * driveStick.GetThrottle()) + .5);
-             move = (driveStick.GetRawAxis(2));
-             spin = (driveStick.GetRawAxis(1));
+             move = (derpDerp.GetRawAxis(Stick_LEFT_Y));
+             spin = (derpDerp.GetRawAxis(Stick_LEFT_X));
+             
+             if (derpDerp.GetRawButton(Button_LEFT_TRIGGER)){
+                if (throttle < 1)
+               throttle=(throttle + .10);
+               else
+               throttle=(1);
+             }
+             if (derpDerp.GetRawButton(Button_LEFT_BUMPER)){
+                 if (throttle > 0)
+                 throttle = (throttle - .10);
+                 else
+                 throttle = (0);
+             }
+             
              
              clearlineOne();
              clearlineTwo();
@@ -177,30 +179,9 @@ public:
              userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "LOLz: %d", (int) (throttle*100));
              userDisplay->UpdateLCD();
              //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-             if (driveStick.GetTrigger()) {
-                 River_Drive.MecanumDrive_Cartesian(driveStick.GetX(), driveStick.GetY(), 0.0, 0.0);
-             }
-             /*
-              * if (derpDerp.GetRawAxis(3) > .5) {
-              *    River_Drive.Mecanum_Cartesian(derpDerp.GetRawAxis(1), derpDerp.GetRawAxis(2), derpDerp.GetRawAxis(4), 0.0)
-              * }
-              */
-             else if (driveStick.GetRawButton(3)) {
-                 allJags(throttle);
-                 //all of these commands can be assigned to the d pad on the xbox controler, but firt we're gonna have to figure out which buttons those are...
-             }
-             else if (driveStick.GetRawButton(2)){
-                 allJags(-throttle);
-             }
-             else if (driveStick.GetRawButton(4)) {
-                 strafeLeft(throttle);
-             }
-             else if (driveStick.GetRawButton(5)) {
-                 strafeRight(throttle);
-             }
-             else {
+             
              River_Drive.ArcadeDrive(spin, move, false);
-             }
+             
              /*
               * else {
               * River_Drive.ArcadeDrive(derpDerp.GetRawAxis(1)), derpDerp.GetRawAxis(2), false);
