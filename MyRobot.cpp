@@ -28,12 +28,15 @@
 
 /*
 *   HARDWARE CONFIGURATION
+
+*   WARNING: The Talons do have their own class, seperate from "jags." However, this class is not implimented yet. In order to use Talons with the Jaguar class, you may need to calibrate the Talons to use the Jaguar PWM conventions.
 *   
 *   Device:                      Connection:
 *   --------------------------------------------------
 *   (jag) Back Right             (Sidecar) PWM port #1 
 *   (jag) Back Left              (Sidecar) PWM port #2
 *   (spike) Compressor           (Sidecar) Relay port #1
+*   Digital Pressure Sensor      (Sidecar) Digital Input Port #1
 *   USB Xbox controller          (Laptop)  USB port #1 (Usin it for real now. This code will not work with a standard joystick)
 */
 
@@ -64,14 +67,14 @@ class River : public SimpleRobot
      float spin; // used to represent the raw X AXIS. AXIS #1 of the left stick on the gamepad.
      
      // Relays
-     Relay Comp; // spike relay on port one for air compressor.
+     Compressor Comp; // spike relay on port one for air compressor.
      
      // Motor Controller
      Jaguar backRight;  // jag on port #1
      Jaguar backLeft;   // jag on port #2
      
      // HIDs
-     Joystick derpDerp  // Logitech Gamepad
+     Joystick derpDerp  // Logitech Gamepad NOT a normal joystick
      
      // Important Stuff
      RobotDrive River_Drive;
@@ -80,14 +83,15 @@ class River : public SimpleRobot
 public:
     River(void):
          //as they are declared above! 
+         Comp(1,1),  // RELAY port #1 and Digital Input Port #1
          backRight(1),
          backLeft(2),
          derpDerp(1),   // logitech gamepad...
-         River_Drive(&backLeft, &backRight) // River_Drive uses jags as declared above... Remove 2 of these to accomadate 2 wheel tank drive
+         River_Drive(&backLeft, &backRight) // River_Drive uses jags as declared above...
     {
          GetWatchdog().SetExpiration(0.1);   //sets the saftey expiration for watchdog
          River_Drive.SetExpiration(0.1);     //sets safey expiration for River_Drive
-    
+         Comp.Start();
     
     
     
@@ -158,6 +162,13 @@ public:
              move = (derpDerp.GetRawAxis(Stick_LEFT_Y));
              spin = (derpDerp.GetRawAxis(Stick_LEFT_X));
              
+             if (derpDerp.GetRawButton(Button_RIGHT_TRIGGER)){
+                SquaredInputs=True;
+             }
+             else {
+                SquaredInputs=False;
+             }
+             
              if (derpDerp.GetRawButton(Button_LEFT_TRIGGER)){
                 if (throttle < 1)
                throttle=(throttle + .10);
@@ -180,13 +191,8 @@ public:
              userDisplay->UpdateLCD();
              //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
              
-             River_Drive.ArcadeDrive(spin, move, false);
+             River_Drive.ArcadeDrive(spin, move, SquaredInputs);
              
-             /*
-              * else {
-              * River_Drive.ArcadeDrive(derpDerp.GetRawAxis(1)), derpDerp.GetRawAxis(2), false);
-              * }
-              */
             
          }
         
