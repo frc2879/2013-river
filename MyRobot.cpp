@@ -33,8 +33,8 @@
 *   
 *   Device:                      Connection:
 *   --------------------------------------------------
-*   (jag) Back Right             (Sidecar) PWM port #1 
-*   (jag) Back Left              (Sidecar) PWM port #2
+*   (jag(talon)) Back Right             (Sidecar) PWM port #1 
+*   (jag(talon)) Back Left              (Sidecar) PWM port #2
 *   (spike) Compressor           (Sidecar) Relay port #1
 *   Digital Pressure Sensor      (Sidecar) Digital Input Port #1
 *   USB Xbox controller          (Laptop)  USB port #1 (Usin it for real now. This code will not work with a standard joystick)
@@ -62,6 +62,9 @@ class River : public SimpleRobot
 {
      // Misc Variables
      bool squaredInputs;  // variable used to set "squared inputs" Not actually used at this point.
+     bool AltDrive;  //Boolean used to toggle drive mode / stick configuration.
+     bool ToggleOne;  // for use toggling things
+     bool ToggleTwo;  // for use toggling things
      float throttle;   // used to represent the alternate "throttle" value.
      float move;  // used to represent the raw Y AXIS. AXIS #2 of the left stick on the gamepad.
      float spin; // used to represent the raw X AXIS. AXIS #1 of the left stick on the gamepad.
@@ -70,8 +73,8 @@ class River : public SimpleRobot
      Compressor Comp; // spike relay on port one for air compressor.
      
      // Motor Controller
-     Jaguar backRight;  // jag on port #1
-     Jaguar backLeft;   // jag on port #2
+     Jaguar backRight;  // jag(talon) on port #1
+     Jaguar backLeft;   // jag(talon) on port #2
      
      // HIDs
      Joystick derpDerp  // Logitech Gamepad NOT a normal joystick
@@ -91,7 +94,7 @@ public:
     {
          GetWatchdog().SetExpiration(0.1);   //sets the saftey expiration for watchdog
          River_Drive.SetExpiration(0.1);     //sets safey expiration for River_Drive
-         Comp.Start();
+         Comp.Start();  //Starts the compressor when the robot is initialized
     
     
     
@@ -146,7 +149,7 @@ public:
     void Autonomous(void)
     {
        GetWatchdog().SetEnabled(false);    // disable the watchdog so it doesn't screw everything up.
-       rotateRight(0.8);
+       rotateRight(0.5);
        Wait(3.0);   // lololololloololololololol
        allJags(0.0);
     }
@@ -163,23 +166,39 @@ public:
              spin = (derpDerp.GetRawAxis(Stick_LEFT_X));
              
              if (derpDerp.GetRawButton(Button_RIGHT_TRIGGER)){
-                SquaredInputs=True;
+                 SquaredInputs=true;
              }
              else {
-                SquaredInputs=False;
+                 SquaredInputs=false;
              }
              
              if (derpDerp.GetRawButton(Button_LEFT_TRIGGER)){
-                if (throttle < 1)
-               throttle=(throttle + .10);
-               else
-               throttle=(1);
+                 if (throttle < 1)
+                 throttle=(throttle + .10);
+                 else
+                 throttle=(1);
              }
              if (derpDerp.GetRawButton(Button_LEFT_BUMPER)){
                  if (throttle > 0)
                  throttle = (throttle - .10);
                  else
                  throttle = (0);
+             }
+             
+             if ((derpDerp.GetRawButton(Button_START)) & !ToggleOne){     // Start button toggles drive modes. (1 stick, or 2 sticks)
+                 ToggleOne = true
+                 if (!AltDrive){
+                  AltDrive = true
+                  clearlineThree();
+                  userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "ALTERNATE DRIVE SCHEME")
+                  userDisplay->UpdateLCD();
+                 }
+                 else if (AltDrive) {
+                  AltDrive = false
+                  clearlineThree();
+                  userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "NORMAL DRIVE SCHEME")
+                  userDisplay->UpdateLCD();
+                 }
              }
              
              
@@ -191,9 +210,15 @@ public:
              userDisplay->UpdateLCD();
              //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
              
+             if (AltDrive) {
+             River_Drive.ArcadeDrive(derpDerp.GetRawAxis(Stick_LEFT_X), derpDerp.GetRawAxis(Stick_RIGHT_Y), SquaredInputs)   // Alternate drive scheme, uses both joystiks.
+             }
+             else {
              River_Drive.ArcadeDrive(spin, move, SquaredInputs);
+             }
+                  
              
-            
+            wait(0.005);  // refresh rate. The Wifi doesn't even work that fast, so why would we update that fast?
          }
         
     }
