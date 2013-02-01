@@ -185,6 +185,12 @@ public:
                  throttle = (0);
              }
              
+             if (!(derpDerp.GetRawButton(Button_START)) {
+                 ToggleOne = false;
+             }
+             else {
+                 ToggleOne = true;
+             }
              if ((derpDerp.GetRawButton(Button_START)) & !ToggleOne){     // Start button toggles drive modes. (1 stick, or 2 sticks)
                  ToggleOne = true
                  if (!AltDrive){
