@@ -1,0 +1,36 @@
+     _________          _____________     _________________    ______________
+    /          \       |    _____    |   |                 /  |   _______    |   
+   /    ___     \      |   |     |   |   |                /   |  |       |   |
+  /    /   \     \     |   |     |   |   |________       /    |  |       |   |
+ |_____|   /     /     |   |     |   |           /      /     |  |       |   |
+          /     /       \   \___/    /          /      /      |  |_______|   |
+         /     /         \          /          /      /       |__________    |
+        /     /          /   ____   \         /      /                   |   |
+       /     /          /   /    \   \       /      /                    |   |
+      /     /          |   |      |   |     /      /                     |   |
+     /     /_______    |   |      |   |    /      /                      |   | 
+    |              |   |   |______|   |   /      /                       |   |
+    |______________|   |______________|  /______/                        |___|  
+
+
+FRC TEAM 2879 robot code
+
+Version Unknown - Xbox controller?
+
+
+Interesting quotes from development:
+--------------------------------------------------
+Gregory: "Make the computer thingy"
+
+
+HARDWARE CONFIGURATION
+--------------------------------------------------
+WARNING: The Talons do have their own class, seperate from "jags." However, this class is not implimented yet. In order to use Talons with the Jaguar class, you may need to calibrate the Talons to use the Jaguar PWM conventions.
+
+Device:                      Connection:
+--------------------------------------------------
+(jag(talon)) Back Right      (Sidecar) PWM port #1 
+(jag(talon)) Back Left       (Sidecar) PWM port #2
+(spike) Compressor           (Sidecar) Relay port #1
+Digital Pressure Sensor      (Sidecar) Digital Input Port #1
+USB Xbox controller          (Laptop)  USB port #1 (Usin it for real now. This code will not work with a standard joystick)
