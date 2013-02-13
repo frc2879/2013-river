@@ -9,4 +9,11 @@
 
 #Ignore any output files
 PPC603gnu/
+
+#Cloud 9 ignore
 ".c9revisions/"
+
+#Linux things
+Makefile
+"2013 River.anjuta"\
+
