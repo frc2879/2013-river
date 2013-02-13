@@ -34,9 +34,8 @@
 class River : public SimpleRobot
 {
     RobotDrive River_Drive; // robot drive system
-	Joystick stick; // only joystick
+    Joystick stick; // only joystick
 	DriverStationLCD* userDisplay;
-    AxisCamera Camera;
     
 	float moveL;
 	float spinL;
@@ -49,12 +48,14 @@ class River : public SimpleRobot
 public:
 	River(void):
 		River_Drive(1, 2),	// these must be initialized in the same order
-		stick(1),		// as they are declared above.
+		stick(1)		// as they are declared above.
         
 	{
 		River_Drive.SetExpiration(0.1);
 		 userDisplay  = DriverStationLCD::GetInstance();
-         Camera & AxisCamera::GetInstance(10.28.79.11)  //Change the IP to match the camera IP and it should work
+		 Wait(0.5);
+		 AxisCamera &Camera = AxisCamera::GetInstance("10.28.79.11");
+		 
 	}
 
 
@@ -186,4 +187,3 @@ public:
 };
 
 START_ROBOT_CLASS(River);
-
