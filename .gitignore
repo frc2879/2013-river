@@ -11,7 +11,7 @@
 PPC603gnu/
 
 #Cloud 9 ignore
-".c9revisions/"
+.c9revisions/
 
 #Linux things
 Makefile
@@ -20,6 +20,7 @@ Makefile
 "2013-river.sublime-workspace"
 .ucpp/
 MyRobot.cpp.orig
+.git/
 
 #OS generated files
 .DS_Store
