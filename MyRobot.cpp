@@ -1,19 +1,12 @@
 /*
- * FRC Team 2879 Robot Code
-*   HARDWARE CONFIGURATION
-*   Device:                      Connection:
-*   --------------------------------------------------
-*   (jag(talon)) Back Right      (Sidecar) PWM port #1
-*   (jag(talon)) Back Left       (Sidecar) PWM port #2
-*   (spike) Compressor           (Sidecar) Relay port #1
-*   Digital Pressure Sensor      (Sidecar) Digital Input Port #1
-*   USB Xbox controller          (Laptop)  USB port #1 (Usin it for real now. This code will not work with a standard joystick)
+*   FRC Team 2879 Robot Code
+*
+*   See the README file for more information.
 */
-
 
 #include "WPILib.h"
 
-
+//Controller Buttons
 #define Button_X 1
 #define Button_Y 4
 #define Button_A 2
@@ -30,7 +23,6 @@
 #define Stick_RIGHT_X 4
 #define Stick_RIGHT_Y 5
 
-
 class River : public SimpleRobot
 {
     RobotDrive River_Drive; // robot drive system
@@ -43,143 +35,136 @@ class River : public SimpleRobot
     float spinR;
     bool SquaredInputs;
     bool DriveToggle;
-    bool AltDrive;
+    bool shooter;
 
 public:
     River(void):
-        River_Drive(1, 2),      // these must be initialized in the same order
-        stick(1)                // as they are declared above.
+        //these must be initialized in the same order as they are declared above.
+        River_Drive(1, 2),
+        stick(1)
 
     {
         River_Drive.SetExpiration(0.1);
         userDisplay  = DriverStationLCD::GetInstance();
         Wait(0.5);
         AxisCamera &Camera = AxisCamera::GetInstance("10.28.79.11");
-
     }
 
-
-    void clearlineOne(void) {   // Clears line #1
+    void clearline1(void) { // Clears line #1
         userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "                   ");
         userDisplay->UpdateLCD();
     }
-    void clearlineTwo(void) {   // Clears line #2
+    void clearline2(void) { // Clears line #2
         userDisplay->Printf(DriverStationLCD::kUser_Line2, 1, "                   ");
         userDisplay->UpdateLCD();
     }
-    void clearlineThree(void) {   // Clears line #3
+    void clearline3(void) { // Clears line #3
         userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "                   ");
         userDisplay->UpdateLCD();
     }
-    void clearlineFour(void) {   // Clears line #4
+    void clearline4(void) {  // Clears line #4
         userDisplay->Printf(DriverStationLCD::kUser_Line4, 1, "                   ");
         userDisplay->UpdateLCD();
     }
-    void clearlineFive(void) {   // Clears line #5
+    void clearline5(void) { // Clears line #5
         userDisplay->Printf(DriverStationLCD::kUser_Line5, 1, "                   ");
         userDisplay->UpdateLCD();
     }
-    void clearlineSix(void) {   // Clears line #6
+    void clearline6(void) { // Clears line #6
         userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "                   ");
         userDisplay->UpdateLCD();
     }
 
-    void Autonomous(void)
-    {
-        // no auton mode as of yet
+    void reload(void) {
+        //reload frisbee
     }
 
+    void Initialize(void) {
+        //Called when the robot is first turned on but the field is in a disabled state
+        userDisplay->Clear();
+        userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "Robot Initialize");
+        userDisplay->UpdateLCD();
+    }
 
-    void OperatorControl(void)
+    //Runs in autonomus mode
+    void Autonomous(void)
     {
+        //no auton mode as of yet
+    }
+
+    //runs in operator control mode
+    void OperatorControl(void) {
         River_Drive.SetSafetyEnabled(true);
         while (IsOperatorControl())
         {
-
-
-            if (stick.GetRawButton(Button_LEFT_TRIGGER)) {
-                AltDrive=true;
+            if (stick.GetRawButton(Button_X)) {
+                reload(); //reload frisbee
             }
-            else {
-                AltDrive=false;
+
+            if (stick.GetRawButton(Button_Y)) {
+                //toggle shooter
+                //kinda working a little
+                if (shooter) {
+                    shooter=false;
+                } else {
+                    shooter=true;
+                }
+            }
+
+            if (stick.GetRawButton(Button_RIGHT_TRIGGER)) {
+                //Shoot frisbee
             }
 
             // Sets squared inputs for driving
-            if (stick.GetRawButton(Button_RIGHT_TRIGGER)) {
+            if (stick.GetRawButton(Button_LEFT_BUMPER)) {
                 SquaredInputs=true;
             }
             else {
                 SquaredInputs=false;
             }
+
             // Updates variables
             if (SquaredInputs) {
                 moveL = (stick.GetRawAxis(Stick_LEFT_Y));  //axis 2
                 spinL = (stick.GetRawAxis(Stick_LEFT_X));  //axis 1
-                moveR = (stick.GetRawAxis(Stick_RIGHT_Y)); //axis 5
-                spinR = (stick.GetRawAxis(Stick_RIGHT_X)); //axis 4
             }
             else {
                 moveL = ((stick.GetRawAxis(Stick_LEFT_Y)) / 2);
                 spinL = ((stick.GetRawAxis(Stick_LEFT_X)) / 2);
-                moveR = ((stick.GetRawAxis(Stick_RIGHT_Y)) / 2);
-                spinR = ((stick.GetRawAxis(Stick_RIGHT_X)) / 2);
             }
 
-            // Right now, we are unable to get valid output for axis 4.
-
             // Updates LCD Display with variables
-            clearlineOne();
-            clearlineTwo();
-            clearlineThree();
-            clearlineFour();
-            clearlineFive();
+            userDisplay->Clear();
             userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "MoveL: %d", (int) (moveL*100));
             userDisplay->Printf(DriverStationLCD::kUser_Line2, 1, "MoveR:%d", (int) (moveR*100));
             userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "SpinL: %d", (int) (spinL*100));
             userDisplay->Printf(DriverStationLCD::kUser_Line4, 1, "SpinR: %d", (int) (spinR*100));
+            if (shooter) {
+                userDisplay->Printf(DriverStationLCD::kUser_Line5, 1, "shooter is on");
+            } else {
+                userDisplay->Printf(DriverStationLCD::kUser_Line5, 1, "shooter is off");
+            }
             if (SquaredInputs) {
-                userDisplay->Printf(DriverStationLCD::kUser_Line5, 1, "squared inputs active");
+                userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "squared inputs active");
             }
             else {
-                clearlineFive();
-                userDisplay->UpdateLCD();
+                clearline5();
             }
             userDisplay->UpdateLCD();
 
             // Drives Robot
-            if (AltDrive) {
-                River_Drive.ArcadeDrive(moveL, spinR, SquaredInputs);
-            }
-            else {
-                River_Drive.ArcadeDrive(moveL, spinL, SquaredInputs); // drive with arcade style (use right stick)
-            }
-
-
+            River_Drive.ArcadeDrive(moveL, spinL, SquaredInputs);
             Wait(0.005); // wait for a motor update time
         }
-    }
+    } //end of operator control code
 
-    /**
-     * Runs during test mode nOT WORKING RITE NAOW DON"T USE PLOX
-     */
+    //runs in test mode
     void Test() {
         while (IsTest()) {
-            moveL = (stick.GetRawAxis(Stick_LEFT_Y));
-            spinL = (stick.GetRawAxis(Stick_LEFT_X));
-            moveR = (stick.GetRawAxis(Stick_RIGHT_Y));
-            spinR = (stick.GetRawAxis(Stick_RIGHT_X));
-
             userDisplay->Clear();
-            userDisplay->Printf(DriverStationLCD::kUser_Line2, 1, "MoveL: %d", (int) (moveL*100));
-            userDisplay->Printf(DriverStationLCD::kUser_Line2, 12, "MoveR:%d", (int) (moveR*100));
-            userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "SpinL: %d", (int) (spinL*100));
-            userDisplay->Printf(DriverStationLCD::kUser_Line3, 12, "SpinR: %d", (int) (spinR*100));
-            if (SquaredInputs) {
-                userDisplay->Printf(DriverStationLCD::kUser_Line4, 1, "squared inputs active");
-            }
+            userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "Test Mode");
             userDisplay->UpdateLCD();
-
-            Wait(0.005);
+            Wait(0.005); // wait for a motor update time
         }
     }
 };
