@@ -26,7 +26,10 @@
 class River : public SimpleRobot
 {
     RobotDrive River_Drive; // robot drive system
-    Joystick stick; // only joystick
+    Jaguar feed; // controls the motor that feeds the shooter
+    Jaguar shoot_one; // shooter motor #1
+    Jaguar shoot_two; // shooter motor #2
+    Joystick stick; // Logitech Gamepad
     DriverStationLCD* userDisplay;
 
     float moveL;
@@ -41,12 +44,21 @@ public:
     River(void):
         //these must be initialized in the same order as they are declared above.
         River_Drive(1, 2),
+        feed(3),
+        shoot_one(4),
+        shoot_two(5),
         stick(1)
 
     {
+        // this code will run when the robot is powered up, but disabled.
         River_Drive.SetExpiration(0.1);
+        
         userDisplay  = DriverStationLCD::GetInstance();
-        Wait(0.5);
+        userDisplay->Clear();
+        userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "Robot Initialize");
+        userDisplay->UpdateLCD();
+        
+        Wait(0.5);  // Wait for camera to boot up
         AxisCamera &Camera = AxisCamera::GetInstance("10.28.79.11");
     }
 
@@ -76,14 +88,8 @@ public:
     }
 
     void reload(void) {
-        //reload frisbee
-    }
-
-    void Initialize(void) {
-        //Called when the robot is first turned on but the field is in a disabled state
-        userDisplay->Clear();
-        userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "Robot Initialize");
-        userDisplay->UpdateLCD();
+      feed.Set(0.26);
+      
     }
 
     //Runs in autonomus mode
