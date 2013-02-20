@@ -88,8 +88,10 @@ public:
     }
 
     void reload(void) {
-      feed.Set(0.26);
-      
+        //ghetto way lulzz
+        feed.Set(0.26);
+        Wait(0.15);
+        feed.Set(0.00);
     }
 
     //Runs in autonomus mode
@@ -157,6 +159,10 @@ public:
                 clearline5();
             }
             userDisplay->UpdateLCD();
+
+            if(shooter) {
+                shoot_one.Set(.56);
+            }
 
             // Drives Robot
             River_Drive.ArcadeDrive(moveL, spinL, SquaredInputs);
