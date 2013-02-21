@@ -40,6 +40,14 @@ class River : public SimpleRobot
     bool DriveToggle;
     bool shooter;
 
+    Task buttoninputtask(“buttoninput”, (FUNCPTR) buttoninput);
+    Task reloadtask(“buttoninput”, (FUNCPTR) reload);
+    Task shoottask(“buttoninput”, (FUNCPTR) shoot);
+
+    bool lastbXstate = false;
+    bool lastbYstate = false;
+    bool lastRTstate = false;
+
 public:
     River(void):
         //these must be initialized in the same order as they are declared above.
@@ -93,6 +101,9 @@ public:
         Wait(0.15);
         feed.Set(0.00);
     }
+    void shoot(void){
+        //shoot frisbee
+    }
 
     //Runs in autonomus mode
     void Autonomous(void)
@@ -100,29 +111,36 @@ public:
         //no auton mode as of yet
     }
 
-    //runs in operator control mode
-    void OperatorControl(void) {
-        River_Drive.SetSafetyEnabled(true);
+    void buttoninput(void)
+    {
         while (IsOperatorControl())
         {
-            if (stick.GetRawButton(Button_X)) {
-                reload(); //reload frisbee
-            }
-
-            if (stick.GetRawButton(Button_Y)) {
+            if (lastbYstate == true && stick.GetRawButton(Button_Y) == false) {
                 //toggle shooter
-                //kinda working a little
                 if (shooter) {
                     shooter=false;
                 } else {
                     shooter=true;
                 }
             }
-
-            if (stick.GetRawButton(Button_RIGHT_TRIGGER)) {
-                //Shoot frisbee
+            if (lastbXstate == true && stick.GetRawButton(Button_X) == false) {
+                reloadtask.Start(); //reload frisbee
             }
+            if (lastRTstate == true && stick.GetRawButton(Button_RIGHT_TRIGGER) == false) {
+                shoottask.Start(); //shoot frisbee
+            }
+            lastRTstate = stick.GetRawButton(Button_RIGHT_TRIGGER);
+            lastbYstate = stick.GetRawButton(Button_Y);
+            lastbXstate = stick.GetRawButton(Button_X);
+        }
+    }
 
+    //runs in operator control mode
+    void OperatorControl(void) {
+        River_Drive.SetSafetyEnabled(true);
+        buttoninputtask.Start();
+        while (IsOperatorControl())
+        {
             // Sets squared inputs for driving
             if (stick.GetRawButton(Button_LEFT_BUMPER)) {
                 SquaredInputs=true;
