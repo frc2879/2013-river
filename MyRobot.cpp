@@ -40,9 +40,9 @@ class River : public SimpleRobot
     bool DriveToggle;
     bool shooter;
 
-    Task buttoninputtask(“buttoninput”, (FUNCPTR) buttoninput);
-    Task reloadtask(“buttoninput”, (FUNCPTR) reload);
-    Task shoottask(“buttoninput”, (FUNCPTR) shoot);
+    Task buttoninputtask("buttoninput", (FUNCPTR) buttoninput);
+    Task reloadtask("buttoninput", (FUNCPTR) reload);
+    Task shoottask("buttoninput", (FUNCPTR) shoot);
 
     bool lastbXstate = false;
     bool lastbYstate = false;
@@ -96,7 +96,6 @@ public:
     }
 
     void reload(void) {
-        //ghetto way lulzz
         feed.Set(0.26);
         Wait(0.15);
         feed.Set(0.00);
@@ -115,6 +114,7 @@ public:
     {
         while (IsOperatorControl())
         {
+            //these if statments check if the button was down at the end of the last loop and if it still is now, if the prior is true and the later false, it runs whatever code.
             if (lastbYstate == true && stick.GetRawButton(Button_Y) == false) {
                 //toggle shooter
                 if (shooter) {
@@ -129,7 +129,7 @@ public:
             if (lastRTstate == true && stick.GetRawButton(Button_RIGHT_TRIGGER) == false) {
                 shoottask.Start(); //shoot frisbee
             }
-            lastRTstate = stick.GetRawButton(Button_RIGHT_TRIGGER);
+            lastRTstate = stick.GetRawButton(Button_RIGHT_TRIGGER);//get button state at end of loop
             lastbYstate = stick.GetRawButton(Button_Y);
             lastbXstate = stick.GetRawButton(Button_X);
         }
@@ -141,6 +141,7 @@ public:
         buttoninputtask.Start();
         while (IsOperatorControl())
         {
+            // this does not need to be in the buttoninput task because it should only run everytime the motors update...
             // Sets squared inputs for driving
             if (stick.GetRawButton(Button_LEFT_BUMPER)) {
                 SquaredInputs=true;
