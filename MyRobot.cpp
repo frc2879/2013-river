@@ -40,13 +40,18 @@ class River : public SimpleRobot
     bool DriveToggle;
     bool shooter;
 
-    Task buttoninputtask("buttoninput", (FUNCPTR) buttoninput);
-    Task reloadtask("buttoninput", (FUNCPTR) reload);
-    Task shoottask("buttoninput", (FUNCPTR) shoot);
+    Task *buttoninputtask;
+    Task *reloadtask;
+    Task *shoottask;
+    //task1 = new Task("testtask", (VOIDFUNCPTR) TestTaskFunction);
 
-    bool lastbXstate = false;
-    bool lastbYstate = false;
-    bool lastRTstate = false;
+    //Task buttoninputtask('bi', (VOIDFUNCPTR) buttoninput);
+    //Task reloadtask("rt", (FUNCPTR) reload);
+    //Task shoottask("st", (FUNCPTR) shoot);
+
+    bool lastbXstate;
+    bool lastbYstate;
+    bool lastRTstate;
 
 public:
     River(void):
@@ -65,9 +70,24 @@ public:
         userDisplay->Clear();
         userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "Robot Initialize");
         userDisplay->UpdateLCD();
+
+
         
         Wait(0.5);  // Wait for camera to boot up
         AxisCamera &Camera = AxisCamera::GetInstance("10.28.79.11");
+
+        lastbXstate = false;
+        lastbYstate = false;
+        lastRTstate = false;
+
+        buttoninputtask = new Task("buttoninputtask", (FUNCPTR) buttoninput);
+    }
+
+    static int reload(void) { //runs from the reloadtask
+        feed.Set(0.26);
+        Wait(0.15);
+        feed.Set(0.00);
+        return 0;
     }
 
     void clearline1(void) { // Clears line #1
@@ -95,11 +115,11 @@ public:
         userDisplay->UpdateLCD();
     }
 
-    void reload(void) { //runs from the reloadtask
+    /*void reload(void) { //runs from the reloadtask
         feed.Set(0.26);
         Wait(0.15);
         feed.Set(0.00);
-    }
+    }*/
     void shoot(void){ //runs from the shoottask
         //shoot frisbee
     }
@@ -123,10 +143,10 @@ public:
                 }
             }
             if (lastbXstate == true && stick.GetRawButton(Button_X) == false) {
-                reloadtask.Start(); //reload frisbee
+                //reloadtask.Start(); //reload frisbee
             }
             if (lastRTstate == true && stick.GetRawButton(Button_RIGHT_TRIGGER) == false) {
-                shoottask.Start(); //shoot frisbee
+                //shoottask.Start(); //shoot frisbee
             }
             lastRTstate = stick.GetRawButton(Button_RIGHT_TRIGGER);//get button state at end of loop
             lastbYstate = stick.GetRawButton(Button_Y);
@@ -137,7 +157,7 @@ public:
     //runs in operator control mode
     void OperatorControl(void) {
         River_Drive.SetSafetyEnabled(true);
-        buttoninputtask.Start();
+        buttoninputtask->Start();
         while (IsOperatorControl())
         {
             // this does not need to be in the buttoninput task because it should only run everytime the motors update...
