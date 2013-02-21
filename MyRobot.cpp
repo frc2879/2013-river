@@ -30,7 +30,7 @@ class River : public SimpleRobot
     Jaguar shoot_one; // shooter motor #1
     Jaguar shoot_two; // shooter motor #2
     Joystick stick; // Logitech Gamepad
-    DriverStationLCD* userDisplay;
+    DriverStationLCD* userDisplay; //Display on driver station program
 
     float moveL;
     float spinL;
@@ -95,12 +95,12 @@ public:
         userDisplay->UpdateLCD();
     }
 
-    void reload(void) {
+    void reload(void) { //runs from the reloadtask
         feed.Set(0.26);
         Wait(0.15);
         feed.Set(0.00);
     }
-    void shoot(void){
+    void shoot(void){ //runs from the shoottask
         //shoot frisbee
     }
 
@@ -110,8 +110,7 @@ public:
         //no auton mode as of yet
     }
 
-    void buttoninput(void)
-    {
+    void buttoninput(void) { //runs from the buttoninputtask
         while (IsOperatorControl())
         {
             //these if statments check if the button was down at the end of the last loop and if it still is now, if the prior is true and the later false, it runs whatever code.
@@ -181,6 +180,8 @@ public:
 
             if(shooter) {
                 shoot_one.Set(.56);
+            } else {
+                shoot_one.Set(0);
             }
 
             // Drives Robot
