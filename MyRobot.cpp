@@ -36,9 +36,9 @@ class River : public SimpleRobot
     float spinL;
     float moveR;
     float spinR;
-    bool SquaredInputs;
-    bool DriveToggle;
-    bool shooter;
+    static bool SquaredInputs;
+    static bool DriveToggle;
+    static bool shooter;
 
     Task *buttoninputtask;
     Task *reloadtask;
@@ -49,9 +49,9 @@ class River : public SimpleRobot
     //Task reloadtask("rt", (FUNCPTR) reload);
     //Task shoottask("st", (FUNCPTR) shoot);
 
-    bool lastbXstate;
-    bool lastbYstate;
-    bool lastRTstate;
+    static bool lastbXstate;
+    static bool lastbYstate;
+    static bool lastRTstate;
 
 public:
     River(void):
@@ -83,13 +83,6 @@ public:
         buttoninputtask = new Task("buttoninputtask", (FUNCPTR) buttoninput);
     }
 
-    static int reload(void) { //runs from the reloadtask
-        feed.Set(0.26);
-        Wait(0.15);
-        feed.Set(0.00);
-        return 0;
-    }
-
     void clearline1(void) { // Clears line #1
         userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "                   ");
         userDisplay->UpdateLCD();
@@ -115,11 +108,11 @@ public:
         userDisplay->UpdateLCD();
     }
 
-    /*void reload(void) { //runs from the reloadtask
+    void reload(void) { //runs from the reloadtask
         feed.Set(0.26);
         Wait(0.15);
         feed.Set(0.00);
-    }*/
+    }
     void shoot(void){ //runs from the shoottask
         //shoot frisbee
     }
@@ -130,7 +123,7 @@ public:
         //no auton mode as of yet
     }
 
-    void buttoninput(void) { //runs from the buttoninputtask
+    static int buttoninput(void) { //runs from the buttoninputtask
         while (IsOperatorControl())
         {
             //these if statments check if the button was down at the end of the last loop and if it still is now, if the prior is true and the later false, it runs whatever code.
@@ -152,6 +145,7 @@ public:
             lastbYstate = stick.GetRawButton(Button_Y);
             lastbXstate = stick.GetRawButton(Button_X);
         }
+        return 0;
     }
 
     //runs in operator control mode
