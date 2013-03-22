@@ -40,6 +40,10 @@ class River : public SimpleRobot
     bool DriveToggle;
     bool shooter;
 
+    bool lastbXstate;
+    bool lastbYstate;
+    bool lastRTstate;
+
 public:
     River(void):
         //these must be initialized in the same order as they are declared above.
@@ -88,10 +92,18 @@ public:
     }
 
     void reload(void) {
-        //ghetto way lulzz
+        //ghetto way lulz
         feed.Set(0.26);
         Wait(0.15);
         feed.Set(0.00);
+    }
+
+    void shooterupdate(void) {
+        if(shooter) {
+            shoot_one.Set(.56);
+        } else {
+            shoot_one.Set(0);
+        }
     }
 
     //Runs in autonomus mode
@@ -105,21 +117,21 @@ public:
         River_Drive.SetSafetyEnabled(true);
         while (IsOperatorControl())
         {
-            if (stick.GetRawButton(Button_X)) {
+            if (lastbXstate == true && stick.GetRawButton(Button_X) == false) {
                 reload(); //reload frisbee
             }
 
-            if (stick.GetRawButton(Button_Y)) {
+            if (lastbYstate == true && stick.GetRawButton(Button_Y) == false) {
                 //toggle shooter
-                //kinda working a little
                 if (shooter) {
                     shooter=false;
                 } else {
                     shooter=true;
                 }
+                shooterupdate();
             }
 
-            if (stick.GetRawButton(Button_RIGHT_TRIGGER)) {
+            if (lastRTstate == true && stick.GetRawButton(Button_RIGHT_TRIGGER) == false) {
                 //Shoot frisbee
             }
 
@@ -156,17 +168,18 @@ public:
                 userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "squared inputs active");
             }
             else {
-                clearline5();
+                clearline6();
             }
             userDisplay->UpdateLCD();
-
-            if(shooter) {
-                shoot_one.Set(.56);
-            }
 
             // Drives Robot
             River_Drive.ArcadeDrive(moveL, spinL, SquaredInputs);
             Wait(0.005); // wait for a motor update time
+
+            //get button state at end of loop
+            lastRTstate = stick.GetRawButton(Button_RIGHT_TRIGGER);
+            lastbYstate = stick.GetRawButton(Button_Y);
+            lastbXstate = stick.GetRawButton(Button_X);
         }
     } //end of operator control code
 
