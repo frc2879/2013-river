@@ -168,7 +168,7 @@ public:
                 userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "squared inputs active");
             }
             else {
-                clearline5();
+                clearline6();
             }
             userDisplay->UpdateLCD();
 
