@@ -30,6 +30,8 @@ class River : public SimpleRobot
     Jaguar shoot_one; // shooter motor #1
     Jaguar shoot_two; // shooter motor #2
     Joystick stick; // Logitech Gamepad
+    Compressor Comp; // Compressor
+    Solenoid Billy; // The solenoid that shoots stuff
     DriverStationLCD* userDisplay;
 
     float moveL;
@@ -51,8 +53,9 @@ public:
         feed(3),
         shoot_one(4),
         shoot_two(5),
-        stick(1)
-
+        stick(1),
+        Comp(9, 1), // PWM port for SPIKE and Digital input port for pressure sensor
+        Billy(1)
     {
         // this code will run when the robot is powered up, but disabled.
         River_Drive.SetExpiration(0.1);
@@ -61,6 +64,8 @@ public:
         userDisplay->Clear();
         userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "Robot Initialize");
         userDisplay->UpdateLCD();
+
+        Comp->Start(); // Starts the compressor when the robot is initialized
         
         Wait(0.5);  // Wait for camera to boot up
         AxisCamera &Camera = AxisCamera::GetInstance("10.28.79.11");
@@ -93,6 +98,7 @@ public:
 
     void reload(void) {
         //ghetto way lulz
+        Billy->Set(false);  //Retracts the piston before reloading. Hopefully.
         feed.Set(0.26);
         Wait(0.15);
         feed.Set(0.00);
@@ -132,7 +138,8 @@ public:
             }
 
             if (lastRTstate == true && stick.GetRawButton(Button_RIGHT_TRIGGER) == false) {
-                //Shoot frisbee
+                // Fires a frisbee (hopefully)
+                Billy->Set(true);
             }
 
             // Sets squared inputs for driving
