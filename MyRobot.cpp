@@ -29,9 +29,10 @@ class River : public SimpleRobot
     Jaguar feed; // controls the motor that feeds the shooter
     Jaguar shoot_one; // shooter motor #1
     Jaguar shoot_two; // shooter motor #2
-    Joystick stick; // Logitech Gamepad
     Compressor Comp; // Compressor
     Solenoid Billy; // The solenoid that shoots stuff
+    Solenoid Sally; // Billy's cousin.
+    Joystick stick; // Logitech Gamepad
     DriverStationLCD* userDisplay;
 
     float moveL;
@@ -39,12 +40,13 @@ class River : public SimpleRobot
     float moveR;
     float spinR;
     bool SquaredInputs;
-    bool DriveToggle;
     bool shooter;
-
+    bool pistonState;
+    bool pistonUpdated;
     bool lastbXstate;
     bool lastbYstate;
     bool lastRTstate;
+    bool lastLTstate;
 
 public:
     River(void):
@@ -53,19 +55,28 @@ public:
         feed(3),
         shoot_one(4),
         shoot_two(5),
-        stick(1),
-        Comp(9, 1), // PWM port for SPIKE and Digital input port for pressure sensor
-        Billy(1)
+        Comp(2, 1), // digital input for sensor and Relay port for spike
+        Billy(1),
+        Sally(2),
+        stick(1)
     {
         // this code will run when the robot is powered up, but disabled.
         River_Drive.SetExpiration(0.1);
-        
+
+        shooter = false;
+        SquaredInputs = false;
+        pistonUpdated = false;  //open
+        feed.Set(0.0);
+        Billy.Set(false);  // neither side of the solenoid is activated. NEVER ACTIVATE BOTH AT ONCE
+        Sally.Set(false);
+        pistonState = false;  // (piston is open)
+
         userDisplay  = DriverStationLCD::GetInstance();
         userDisplay->Clear();
         userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "Robot Initialize");
         userDisplay->UpdateLCD();
 
-        Comp->Start(); // Starts the compressor when the robot is initialized
+        Comp.Start(); // Starts the compressor when the robot is initialized
         
         Wait(0.5);  // Wait for camera to boot up
         AxisCamera &Camera = AxisCamera::GetInstance("10.28.79.11");
@@ -97,18 +108,52 @@ public:
     }
 
     void reload(void) {
-        //ghetto way lulz
-        Billy->Set(false);  //Retracts the piston before reloading. Hopefully.
+        if(pistonState) {
+        PistonToggle();
+        PistonUpdate();
+        } else if(!pistonState) {
+          clearline3();
+          userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "Piston Error (r)");
+          userDisplay->UpdateLCD();
+        }
+        Wait(0.05);
         feed.Set(0.26);
         Wait(0.15);
         feed.Set(0.00);
     }
 
+    void PistonToggle(void) {
+        // Toggles the value of pistonState, and therefore the position of the piston.
+        if(!pistonState) {
+           pistonState = true;
+           pistonUpdated = false;
+        } else {
+            pistonState = false;
+            pistonUpdated = false;
+        }
+    }
+
+    void PistonUpdate(void) {
+        if(pistonState && !pistonUpdated) {
+           Billy.Set(true);
+           Wait(0.15);
+           Billy.Set(false);
+        } else if(!pistonState && !pistonUpdated) {
+           Sally.Set(true);
+           Wait(0.15);
+           Sally.Set(false);
+        }
+        pistonUpdated = true;
+    }
+        
+
     void shooterupdate(void) {
         if(shooter) {
             shoot_one.Set(.56);
+            shoot_two.Set(.56);
         } else {
             shoot_one.Set(0);
+            shoot_two.Set(0);
         }
     }
 
@@ -121,13 +166,16 @@ public:
     //runs in operator control mode
     void OperatorControl(void) {
         River_Drive.SetSafetyEnabled(true);
+        shooter=false;
+        shooterupdate();
+       
         while (IsOperatorControl())
         {
-            if (lastbXstate == true && stick.GetRawButton(Button_X) == false) {
+            if (lastbXstate == false && stick.GetRawButton(Button_X) == true) {
                 reload(); //reload frisbee
             }
 
-            if (lastbYstate == true && stick.GetRawButton(Button_Y) == false) {
+            if (lastbYstate == false && stick.GetRawButton(Button_Y) == true) {
                 //toggle shooter
                 if (shooter) {
                     shooter=false;
@@ -136,11 +184,29 @@ public:
                 }
                 shooterupdate();
             }
+            /*
+            if (lastRTstate == false && stick.GetRawButton(Button_RIGHT_TRIGGER) == true) {
+                // Shoots a frisbee
+               if(!pistonState) {
+                PistonToggle();
+                PistonUpdate();
+               } else if(pistonState) {
+                clearline3();
+                userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "Piston Error (F)");
+                userDisplay->UpdateLCD();
+               }
 
-            if (lastRTstate == true && stick.GetRawButton(Button_RIGHT_TRIGGER) == false) {
-                // Fires a frisbee (hopefully)
-                Billy->Set(true);
             }
+            */
+
+            if(stick.GetRawButton(Button_RIGHT_TRIGGER)) {
+                Billy.Set(true);
+            } else {
+                Sally.Set(true);
+            }   
+    
+
+            
 
             // Sets squared inputs for driving
             if (stick.GetRawButton(Button_LEFT_BUMPER)) {
@@ -150,6 +216,7 @@ public:
                 SquaredInputs=false;
             }
 
+
             // Updates variables
             if (SquaredInputs) {
                 moveL = (stick.GetRawAxis(Stick_LEFT_Y));  //axis 2
@@ -157,15 +224,13 @@ public:
             }
             else {
                 moveL = ((stick.GetRawAxis(Stick_LEFT_Y)) / 2);
-                spinL = ((stick.GetRawAxis(Stick_LEFT_X)) / 2);
+                spinL = -((stick.GetRawAxis(Stick_LEFT_X)) / 2);
             }
 
             // Updates LCD Display with variables
             userDisplay->Clear();
             userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "MoveL: %d", (int) (moveL*100));
-            userDisplay->Printf(DriverStationLCD::kUser_Line2, 1, "MoveR:%d", (int) (moveR*100));
-            userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "SpinL: %d", (int) (spinL*100));
-            userDisplay->Printf(DriverStationLCD::kUser_Line4, 1, "SpinR: %d", (int) (spinR*100));
+            userDisplay->Printf(DriverStationLCD::kUser_Line2, 1, "SpinL: %d", (int) (spinL*100));
             if (shooter) {
                 userDisplay->Printf(DriverStationLCD::kUser_Line5, 1, "shooter is on");
             } else {
@@ -178,6 +243,7 @@ public:
                 clearline6();
             }
             userDisplay->UpdateLCD();
+
 
             // Drives Robot
             River_Drive.ArcadeDrive(moveL, spinL, SquaredInputs);
