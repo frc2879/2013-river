@@ -42,6 +42,7 @@ class River : public SimpleRobot
      int HANDICAP; //Value between 1 and ?. Limits max throttle to 1/2, 1/3, 1/4, etc.
      int SQUARE; //Value between 1 and 4. Higher number decreases sensativity at lower speeds.
      int SolenoidUpdate;
+     int ShooterSpeed;
     // Joystick Input Variables
      float moveL;
      float spinL;
@@ -92,6 +93,7 @@ public:
      HANDICAP = 1;
      SQUARE = 1;
      SolenoidUpdate = 1;
+     ShooterSpeed = .56;
      // CONFIG VALUES ~~~~~~~
 
      Wait(0.5); // Wait for camera to boot up
@@ -139,7 +141,7 @@ public:
             PistonUpdate();
         }
  	     feed.Set(0.30);
- 	     Wait(0.50);
+ 	     Wait(0.48);
  	     feed.Set(0.0);
      }
 
@@ -161,6 +163,8 @@ public:
  	     if(ShooterState) {
             shoot_one.Set(-.56);
             shoot_two.Set(-.56);
+            //shoot_one.Set(-.15);
+            //shoot_two.Set(-.15);
  	     } else {
             shoot_one.Set(0.0);
  	        shoot_two.Set(0.0);
@@ -192,6 +196,7 @@ public:
      	 River_Drive.SetSafetyEnabled(true);
      	 ShooterState = false;
      	 ShooterUpdate();
+         userDisplay->Clear();
       // Operator Control Loop
      	 while (IsOperatorControl())
      	 {
@@ -240,9 +245,17 @@ public:
           
          if(lastBAstate==false && (stick.GetRawButton(Button_A))) {
             //Shoot a frisbee
-            PistonUpdate();
-            Wait(0.5);
-            Reload();
+            if(ShooterState) {
+             clearline3();
+             PistonUpdate();
+             Wait(0.5);
+             Reload();
+            } else {
+             clearline3();
+             userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "SLAP MATT FOR ME");
+             userDisplay->UpdateLCD();
+            }
+            
          }
 
 
@@ -251,7 +264,11 @@ public:
      	 	 spinL = -(((stick.GetRawAxis(Stick_LEFT_X)) / HANDICAP) * SQUARE);
 
      	 	// Update LCD Display with variables
-     	 	 userDisplay->Clear();
+     	 	 clearline1();
+             clearline2();
+             clearline4();
+             clearline5();
+             clearline6();
      	 	 userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "MoveL: %d", (int) (moveL*100));
      	 	 userDisplay->Printf(DriverStationLCD::kUser_Line2, 1, "SpinL: %d", (int) (spinL*100));
      	 	 // Update Shooter State on LCD
@@ -260,12 +277,6 @@ public:
      	 	 } else {
      	 	 	userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "Shooter is off");
      	 	 }
-
-             if(PistonState == true) {
-                userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "piston is onn");
-             } else {
-                userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "piston is off");
-             }
 
              if(lastBYstate == true) {
                 userDisplay->Printf(DriverStationLCD::kUser_Line4, 1, "lastBYstate is true");
