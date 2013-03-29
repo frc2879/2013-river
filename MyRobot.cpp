@@ -68,7 +68,7 @@ public:
 	  // Pneumatics
 	     Comp(2,1),
 	     Billy(1),
-	     Sally(4),
+	     Sally(7),
 	  // IO Devices
 	     stick(1)
 	//~~~~~~~~~~~~~~~~~~~~~~~~ INITIALIZATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,7 +91,7 @@ public:
      // CONFIG VALUES ~~~~~~~
      HANDICAP = 1;
      SQUARE = 1;
-     SolenoidUpdate = 4;
+     SolenoidUpdate = 1;
      // CONFIG VALUES ~~~~~~~
 
      Wait(0.5); // Wait for camera to boot up
@@ -139,7 +139,7 @@ public:
             PistonUpdate();
         }
  	     feed.Set(0.30);
- 	     Wait(0.20);
+ 	     Wait(0.50);
  	     feed.Set(0.0);
      }
 
