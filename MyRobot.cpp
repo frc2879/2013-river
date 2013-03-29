@@ -220,11 +220,11 @@ public:
      	 	 userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "MoveL: %d", (int) (moveL*100));
      	 	 userDisplay->Printf(DriverStationLCD::kUser_Line2, 1, "SpinL: %d", (int) (spinL*100));
      	 	 // Update Shooter State on LCD
-     	 	     if(ShooterState) {
-     	 	 	     userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "Shooter is onn");
-     	 	     } else {
-     	 	 	     userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "Shooter is off");
-     	 	     }
+     	 	 if(ShooterState) {
+     	 	    userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "Shooter is onn");
+     	 	 } else {
+     	 	 	userDisplay->Printf(DriverStationLCD::kUser_Line6, 1, "Shooter is off");
+     	 	 }
              userDisplay->UpdateLCD();
 
             // Drive Robot
