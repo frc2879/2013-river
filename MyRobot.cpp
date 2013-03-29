@@ -41,6 +41,7 @@ class River : public SimpleRobot
     // Config Values
      int HANDICAP; //Value between 1 and ?. Limits max throttle to 1/2, 1/3, 1/4, etc.
      int SQUARE; //Value between 1 and 4. Higher number decreases sensativity at lower speeds.
+     int SolenoidUpdate;
     // Joystick Input Variables
      float moveL;
      float spinL;
@@ -67,7 +68,7 @@ public:
 	  // Pneumatics
 	     Comp(2,1),
 	     Billy(1),
-	     Sally(3),
+	     Sally(4),
 	  // IO Devices
 	     stick(1)
 	//~~~~~~~~~~~~~~~~~~~~~~~~ INITIALIZATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,11 +88,16 @@ public:
      PistonUpdated = false;
      Billy.Set(false);
      Sally.Set(false);
+     // CONFIG VALUES ~~~~~~~
      HANDICAP = 1;
      SQUARE = 1;
+     SolenoidUpdate = 4;
+     // CONFIG VALUES ~~~~~~~
 
      Wait(0.5); // Wait for camera to boot up
      AxisCamera &Camera = AxisCamera::GetInstance("10.28.79.11");
+
+     // put code here to initialize the piston in the open position
 
      userDisplay = DriverStationLCD::GetInstance();
      userDisplay->Clear();
@@ -129,12 +135,15 @@ public:
 
      void Reload(void) {
  	  // Feed new frisbee
+        if(PistonUpdated) {
+            PistonUpdate();
+        }
  	     feed.Set(0.30);
  	     Wait(0.20);
  	     feed.Set(0.0);
      }
 
-
+     /*
      void PistonToggle (void) {
       // Toggles Piston State
          if(!PistonState) {
@@ -145,6 +154,7 @@ public:
          	PistonState = false;
          }
      }
+     */
 
      void ShooterUpdate(void) {
       // Update Shooter State
@@ -159,17 +169,17 @@ public:
      
     void PistonUpdate(void) {
       // Update Piston State
-     	 if(stick.GetRawButton(Button_A) && !PistonUpdated) {
-     	    Sally.Set(true);
-     	    Wait(0.25);
-     	    Sally.Set(false);
+     	 if(!PistonUpdated) {
+            Billy.Set(true);   // billy is on port #1
+            Wait(SolenoidUpdate);
+            Billy.Set(false);
             PistonUpdated = true;
-     	 } else if(!stick.GetRawButton(Button_A) && PistonUpdated) {
-     	    Billy.Set(true);
-     	    Wait(0.30);
-     	    Billy.Set(false);
+         } else if(PistonUpdated) {
+            Sally.Set(true);    // sally is on port #3
+            Wait(SolenoidUpdate);
+            Sally.Set(false);
             PistonUpdated = false;
-     	 }
+         }
      	 
      } 
     //~~~~~~~~~~~~~~~~~~~~~~~~ AUTON CODE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -212,6 +222,7 @@ public:
              }
 
      	 	 if(lastBYstate==false && (stick.GetRawButton(Button_Y))) {
+                // SHOOTER TOGGLE
                 printf("Button Y Toggle!!!!!\n");
                 if(ShooterState) {
                     printf("ShooterState becoming false\n");
@@ -228,17 +239,10 @@ public:
      	 	 }*/
           
          if(lastBAstate==false && (stick.GetRawButton(Button_A))) {
-         if(!PistonUpdated) {
-            Billy.Set(true);
-            Wait(0.25);
-            Billy.Set(false);
-            PistonUpdated = true;
-         } else if(PistonUpdated) {
-            Sally.Set(true);
-            Wait(0.30);
-            Sally.Set(false);
-            PistonUpdated = false;
-         }
+            //Shoot a frisbee
+            PistonUpdate();
+            Wait(0.5);
+            Reload();
          }
 
 
@@ -280,7 +284,7 @@ public:
              ShooterUpdate();
              River_Drive.ArcadeDrive(moveL, spinL, SQUARE);
 
-// Final Checks
+            // Final Checks
              lastRTstate = stick.GetRawButton(Button_RIGHT_TRIGGER);
              lastBYstate = stick.GetRawButton(Button_Y);
              lastBXstate = stick.GetRawButton(Button_X);
