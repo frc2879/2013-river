@@ -7,21 +7,21 @@
 #include "WPILib.h"
 
 //Logitech Gamepad Button Maping
-#define Button_X 1
-#define Button_Y 4
-#define Button_A 2
-#define Button_B 3
-#define Button_START 10
-#define Button_BACK 9
-#define Button_RIGHT_BUMPER 6
-#define Button_RIGHT_TRIGGER 8
-#define Button_LEFT_BUMPER 5
-#define Button_LEFT_TRIGGER 7
-// Controller Axis(s)
-#define Stick_LEFT_Y 2
-#define Stick_LEFT_X 1
-#define Stick_RIGHT_X 4
-#define Stick_RIGHT_Y 5
+ #define Button_X 1
+ #define Button_Y 4
+ #define Button_A 2
+ #define Button_B 3
+ #define Button_START 10
+ #define Button_BACK 9
+ #define Button_RIGHT_BUMPER 6
+ #define Button_RIGHT_TRIGGER 8
+ #define Button_LEFT_BUMPER 5
+ #define Button_LEFT_TRIGGER 7
+ // Controller Axis(s)
+ #define Stick_LEFT_Y 2
+ #define Stick_LEFT_X 1
+ #define Stick_RIGHT_X 4
+ #define Stick_RIGHT_Y 5
 
 class River : public SimpleRobot
 {
@@ -35,12 +35,12 @@ class River : public SimpleRobot
      Solenoid Billy;
      Solenoid Sally;
     // IO devices.
-     Joystick Stick; 
+     Joystick stick; 
      DriverStationLCD* userDisplay;
     
     // Config Values
-     const int HANDICAP = 1; //Value between 1 and ?. Limits max throttle to 1/2, 1/3, 1/4, etc.
-     const int SQUARE = 1; //Value between 1 and 4. Higher number decreases sensativity at lower speeds.
+     int HANDICAP; //Value between 1 and ?. Limits max throttle to 1/2, 1/3, 1/4, etc.
+     int SQUARE; //Value between 1 and 4. Higher number decreases sensativity at lower speeds.
     // Joystick Input Variables
      float moveL;
      float spinL;
@@ -80,11 +80,13 @@ public:
      PistonUpdated = false;
      Billy.Set(false);
      Sally.Set(false);
+     HANDICAP = 1;
+     SQUARE = 1;
 
      Wait(0.5); // Wait for camera to boot up
      AxisCamera &Camera = AxisCamera::GetInstance("10.28.79.11");
 
-     UserDisplay = DriverStationLCD::GetInstance();
+     userDisplay = DriverStationLCD::GetInstance();
      userDisplay->Clear();
      userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "Robot Initialized. . .");
      userDisplay->Printf(DriverStationLCD::kUser_Line2, 1, "HANDICAP: 1/%d", (int) HANDICAP);
@@ -126,7 +128,7 @@ public:
  	     } else if(!PistonState) {
  	        clearline3();
  	        userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "Piston Error (R)");
- 	        userDisplay->UpdateLCD;
+ 	        userDisplay->UpdateLCD();
  	     }
  	  // Feed new frisbee
  	     Wait(0.05);
@@ -156,7 +158,7 @@ public:
 
      void ShooterUpdate(void) {
       // Update Shooter State
- 	     if(shooter) {
+ 	     if(ShooterState) {
             shoot_one.Set(.56);
             shoot_two.Set(.56);
  	     } else {
@@ -185,28 +187,28 @@ public:
     //~~~~~~~~~~~~~~~~~~~~~~~~ OPERATOR CONTROL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      void OperatorControl(void) {
       // Operator Startup
-     	 River_Drive.SetSafteyEnabled(true);
+     	 River_Drive.SetSafetyEnabled(true);
      	 ShooterState = false;
      	 ShooterUpdate();
       // Operator Control Loop
      	 while (IsOperatorControl())
      	 {
      	 	// Reload Shooter
-     	 	 if ((!lastBXstate) && (stick.GetRawButton(Button_X)) {
+     	 	 if ((!lastBXstate) && (stick.GetRawButton(Button_X))) {
      	 	 	Reload();
      	 	 }
      	 	// Toggle Shooter Wheels
-     	 	 if((!lastBYstate) && (stick.GetRawButton(Button_Y)) {
+     	 	 if((!lastBYstate) && (stick.GetRawButton(Button_Y))) {
                 ShooterToggle();
      	 	 }
      	 	// Shoot a frisbee
-     	 	 if((!lastRTstate) && (stick.GetRawButton(Button_RIGHT_TRIGGER)) {
+     	 	 if((!lastRTstate) && (stick.GetRawButton(Button_RIGHT_TRIGGER))) {
      	 	 	if(!PistonState) {
      	 	 		PistonToggle();
      	 	 		PistonUpdate();
      	 	 	} else if(PistonState) {
      	 	 		clearline3();
-     	 	 		userDisplay->printf(DriverStationLCD::kUser_Line3, 1, "Piston Error (F)");
+     	 	 		userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "Piston Error (F)");
      	 	 		userDisplay->UpdateLCD();
      	 	 	}
      	 	 }
@@ -247,7 +249,7 @@ public:
      		userDisplay->Clear();
      		userDisplay->Printf(DriverStationLCD::kUser_Line1, 1, "TEST MODE");
      		
-     		// Button Diagnostics
+     		/* Button Diagnostics
      		 switch (true)
      		 {
      		 	case stick.GetRawButton(Button_X):
@@ -283,6 +285,7 @@ public:
      		 	default:
      		 	    userDisplay->Printf(DriverStationLCD::kUser_Line3, 1, "No Button Pushed");
      		 }
+             */
      		 
             userDisplay->UpdateLCD();
      		Wait(0.005); // wait for motor update time
