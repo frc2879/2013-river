@@ -151,8 +151,8 @@ public:
 
      void Reload(void) {
  	  // Feed new frisbee
-        if(PistonUpdated) {
-            PistonUpdate();
+        if(PistonState) {
+            PistonToggle();
         }
         if(BackFeed) {
             feed.Set(-0.30);
