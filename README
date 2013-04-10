@@ -43,11 +43,4 @@ Logitech Gamepad                  (Laptop USB)
 
 CURRENT ISSUES:
 --------------------------------------------------
-Frisbee feed motor runs constantly when enabled. Suspected to be 
-a Talon calibration problem.
-
-Input from Gamepad not working. Suspected to be a problem 
-somewhere in the code.
-
-Connection to FMS is constantly dropped, suspected to be a problem
-with our router.
+THERE ARE NONE. IT'S PREFECT. BLAME ALL THE PROBLEMS ON HARDWARE. #notacodeissue
